@@ -73,10 +73,10 @@
           </div>
           <aside class="editor-panel">
             <div class="panel-title"><div><p class="eyebrow">SPOT EDITOR</p><h3 id="editorTitle">新しいスポット</h3></div><span class="pin-status" id="pinStatus">地図をタップ</span></div>
-            <form id="spotForm">
-              <label>建物名<input id="spotName" name="name" type="text" placeholder="例：東京タワー" required></label>
-              <div class="coordinate-grid"><label>緯度<input id="spotLat" name="lat" type="number" step="any" placeholder="35.658581" required></label><label>経度<input id="spotLng" name="lng" type="number" step="any" placeholder="139.745433" required></label></div>
-              <label>説明文<textarea id="spotDesc" name="desc" rows="3" placeholder="スポットの説明を入力"></textarea></label>
+            <form id="spotForm" autocomplete="off">
+              <label>建物名<input id="spotName" name="name" type="text" autocomplete="off" placeholder="例：東京タワー" required></label>
+              <div class="coordinate-grid"><label>緯度<input id="spotLat" name="lat" type="number" autocomplete="off" step="any" placeholder="35.658581" required></label><label>経度<input id="spotLng" name="lng" type="number" autocomplete="off" step="any" placeholder="139.745433" required></label></div>
+              <label>説明文<textarea id="spotDesc" name="desc" autocomplete="off" rows="3" placeholder="スポットの説明を入力"></textarea></label>
               <div class="form-actions"><button class="secondary-button" id="clearForm" type="button">クリア</button><button class="primary-button" type="submit">保存する</button></div>
             </form>
           </aside>
