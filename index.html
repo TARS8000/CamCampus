@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081313">
+  <title>NAVI SCOPE | WebAR 建物案内</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true">N</span>
+        <div>
+          <p class="eyebrow">WEBAR FIELD GUIDE</p>
+          <h1>NAVI SCOPE</h1>
+        </div>
+      </div>
+      <div class="status-chip" id="headerStatus"><span class="status-dot"></span><span>準備中</span></div>
+    </header>
+
+    <main>
+      <section id="arView" class="view active-view" aria-labelledby="arTitle">
+        <div class="camera-stage">
+          <video id="camera" autoplay playsinline muted></video>
+          <div class="camera-fallback" id="cameraFallback">
+            <span class="fallback-icon">◎</span>
+            <strong>カメラを起動してください</strong>
+            <small>安全な接続環境で権限を許可すると、周辺スポットが表示されます</small>
+          </div>
+          <div class="camera-shade"></div>
+          <div class="crosshair" aria-hidden="true"><i></i><i></i></div>
+          <div class="hud">
+            <div><span>LAT / LNG</span><b id="hudCoordinates">デモモード</b></div>
+            <div><span>ACCURACY</span><b id="hudAccuracy">-- m</b></div>
+            <div><span>HEADING</span><b id="hudHeading">--°</b></div>
+            <div><span>VISIBLE</span><b id="hudVisible">0 SPOTS</b></div>
+          </div>
+          <div class="ar-layer" id="arLayer" aria-live="polite"></div>
+          <div class="viewfinder-label"><span class="pulse-dot"></span><span id="viewfinderMessage">周囲をスキャン中</span></div>
+          <div class="camera-actions">
+            <button class="icon-button" id="centerView" type="button" title="表示を中央に戻す" aria-label="表示を中央に戻す">⌖</button>
+            <button class="icon-button" id="toggleDemo" type="button" title="デモモード" aria-label="デモモード">◈</button>
+            <button class="icon-button" id="openPanorama" type="button" title="360度ビュー" aria-label="360度ビュー">360</button>
+          </div>
+        </div>
+        <div class="ar-controls">
+          <div class="section-heading compact-heading">
+            <div><p class="eyebrow">LIVE ORIENTATION</p><h2 id="arTitle">視界のスポット</h2></div>
+            <span class="counter" id="spotCount">0</span>
+          </div>
+          <div class="calibration-control">
+            <div class="control-label"><span>コンパス補正</span><strong id="offsetValue">0°</strong></div>
+            <input id="headingOffset" type="range" min="-45" max="45" value="0" step="1" aria-label="コンパス補正">
+            <div class="range-labels"><span>-45°</span><span>磁気干渉補正</span><span>+45°</span></div>
+          </div>
+          <div class="permission-panel" id="permissionPanel">
+            <div class="permission-copy"><span class="step-number" id="permissionStep">01</span><div><strong id="permissionTitle">GPS を許可</strong><p id="permissionDescription">現在地を使って周囲の建物を計算します</p></div></div>
+            <button class="primary-button" id="permissionButton" type="button">開始</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminView" class="view" aria-labelledby="adminTitle">
+        <div class="admin-heading section-heading"><div><p class="eyebrow">LOCAL SPOT DATABASE</p><h2 id="adminTitle">スポット管理</h2></div><span class="storage-note">端末内保存</span></div>
+        <div class="admin-grid">
+          <div class="map-panel">
+            <div id="map" aria-label="スポット位置選択地図"></div>
+            <div class="map-toolbar"><button class="map-tool" id="locateButton" type="button">⌖ 現在地に移動</button><button class="map-tool" id="demoSpotsButton" type="button">＋ 周辺デモ生成</button></div>
+          </div>
+          <aside class="editor-panel">
+            <div class="panel-title"><div><p class="eyebrow">SPOT EDITOR</p><h3 id="editorTitle">新しいスポット</h3></div><span class="pin-status" id="pinStatus">地図をタップ</span></div>
+            <form id="spotForm" autocomplete="off">
+              <label>建物名<input id="spotName" name="name" type="text" autocomplete="off" placeholder="例：東京タワー" required></label>
+              <div class="coordinate-grid"><label>緯度<input id="spotLat" name="lat" type="number" autocomplete="off" step="any" placeholder="35.658581" required></label><label>経度<input id="spotLng" name="lng" type="number" autocomplete="off" step="any" placeholder="139.745433" required></label></div>
+              <label>説明文<textarea id="spotDesc" name="desc" autocomplete="off" rows="3" placeholder="スポットの説明を入力"></textarea></label>
+              <div class="form-actions"><button class="secondary-button" id="clearForm" type="button">クリア</button><button class="primary-button" type="submit">保存する</button></div>
+            </form>
+          </aside>
+        </div>
+        <div class="data-panel">
+          <div class="data-heading"><div><p class="eyebrow">REGISTERED PLACES</p><h3>登録スポット <span id="listCount">0</span></h3></div><div class="data-actions"><button class="secondary-button" id="exportButton" type="button">↓ JSON 出力</button><label class="secondary-button file-button">↑ JSON 読込<input id="importInput" type="file" accept="application/json,.json"></label></div></div>
+          <div class="spot-list" id="spotList"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="メインナビゲーション">
+      <button class="nav-item active" data-view="arView" type="button"><span>◉</span><strong>ARビュー</strong></button>
+      <button class="nav-item" data-view="adminView" type="button"><span>⌘</span><strong>管理画面</strong></button>
+    </nav>
+  </div>
+
+  <dialog id="spotDialog" class="spot-dialog"><button class="dialog-close" id="closeDialog" type="button" aria-label="閉じる">×</button><p class="eyebrow">SPOT DETAILS</p><h2 id="dialogName"></h2><div class="dialog-distance" id="dialogDistance"></div><p id="dialogDescription"></p></dialog>
+  <dialog id="panoramaDialog" class="panorama-dialog"><button class="dialog-close" id="closePanorama" type="button" aria-label="360度ビューを閉じる">×</button><div class="panorama-header"><div><p class="eyebrow">DEVELOPER PANORAMA</p><h2>360° 周辺ビュー</h2></div><button class="secondary-button" id="enablePanoramaOrientation" type="button">端末の向きを使う</button></div><div class="panorama-frame"><canvas id="panoramaCanvas" aria-label="360度パノラマビュー"></canvas><div class="panorama-reticle">＋</div><span class="panorama-direction direction-left">← ドラッグ</span><span class="panorama-direction direction-right">ドラッグ →</span></div><div class="panorama-footer"><span><i class="pulse-dot"></i> 開発用パノラマ</span><strong id="panoramaHeading">方位 0°</strong><small>画面を左右にドラッグして見渡せます</small></div></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
